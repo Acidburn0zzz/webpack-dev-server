@@ -51,9 +51,13 @@ describe("magicHtml option", () => {
 
       expect(response.status()).toMatchSnapshot("response status");
 
+      expect(await response.text()).toMatchSnapshot("response text");
+
       expect(consoleMessages.map((message) => message.text())).toMatchSnapshot(
         "console messages"
       );
+
+      expect(pageErrors).toMatchSnapshot("page errors");
     });
 
     it("should handle HEAD request to magic async html", async () => {
@@ -80,9 +84,197 @@ describe("magicHtml option", () => {
 
       expect(response.status()).toMatchSnapshot("response status");
 
+      expect(await response.text()).toMatchSnapshot("response text");
+
       expect(consoleMessages.map((message) => message.text())).toMatchSnapshot(
         "console messages"
       );
+
+      expect(pageErrors).toMatchSnapshot("page errors");
+    });
+  });
+
+  describe("enabled with experiments.outputModule: true", () => {
+    let compiler;
+    let server;
+    let page;
+    let browser;
+    let pageErrors;
+    let consoleMessages;
+
+    beforeEach(async () => {
+      compiler = webpack({
+        ...config,
+        experiments: {
+          outputModule: true,
+        },
+      });
+      server = new Server({ port, magicHtml: true }, compiler);
+
+      await server.start();
+
+      ({ page, browser } = await runBrowser());
+
+      pageErrors = [];
+      consoleMessages = [];
+    });
+
+    afterEach(async () => {
+      await browser.close();
+      await server.stop();
+    });
+
+    it("should handle GET request to magic async html", async () => {
+      page
+        .on("console", (message) => {
+          consoleMessages.push(message);
+        })
+        .on("pageerror", (error) => {
+          pageErrors.push(error);
+        });
+
+      const response = await page.goto(`http://127.0.0.1:${port}/main`, {
+        waitUntil: "networkidle0",
+      });
+
+      expect(response.headers()["content-type"]).toMatchSnapshot(
+        "response headers content-type"
+      );
+
+      expect(response.status()).toMatchSnapshot("response status");
+
+      expect(await response.text()).toMatchSnapshot("response text");
+
+      expect(consoleMessages.map((message) => message.text())).toMatchSnapshot(
+        "console messages"
+      );
+
+      expect(pageErrors).toMatchSnapshot("page errors");
+    });
+
+    it("should handle HEAD request to magic async html", async () => {
+      await page.setRequestInterception(true);
+
+      page
+        .on("console", (message) => {
+          consoleMessages.push(message);
+        })
+        .on("pageerror", (error) => {
+          pageErrors.push(error);
+        })
+        .on("request", (interceptedRequest) => {
+          interceptedRequest.continue({ method: "HEAD" });
+        });
+
+      const response = await page.goto(`http://127.0.0.1:${port}/main`, {
+        waitUntil: "networkidle0",
+      });
+
+      expect(response.headers()["content-type"]).toMatchSnapshot(
+        "response headers content-type"
+      );
+
+      expect(response.status()).toMatchSnapshot("response status");
+
+      expect(await response.text()).toMatchSnapshot("response text");
+
+      expect(consoleMessages.map((message) => message.text())).toMatchSnapshot(
+        "console messages"
+      );
+
+      expect(pageErrors).toMatchSnapshot("page errors");
+    });
+  });
+
+  describe("enabled with experiments.outputModule: false", () => {
+    let compiler;
+    let server;
+    let page;
+    let browser;
+    let pageErrors;
+    let consoleMessages;
+
+    beforeEach(async () => {
+      compiler = webpack({
+        ...config,
+        experiments: {
+          outputModule: false,
+        },
+      });
+      server = new Server({ port, magicHtml: true }, compiler);
+
+      await server.start();
+
+      ({ page, browser } = await runBrowser());
+
+      pageErrors = [];
+      consoleMessages = [];
+    });
+
+    afterEach(async () => {
+      await browser.close();
+      await server.stop();
+    });
+
+    it("should handle GET request to magic async html", async () => {
+      page
+        .on("console", (message) => {
+          consoleMessages.push(message);
+        })
+        .on("pageerror", (error) => {
+          pageErrors.push(error);
+        });
+
+      const response = await page.goto(`http://127.0.0.1:${port}/main`, {
+        waitUntil: "networkidle0",
+      });
+
+      expect(response.headers()["content-type"]).toMatchSnapshot(
+        "response headers content-type"
+      );
+
+      expect(response.status()).toMatchSnapshot("response status");
+
+      expect(await response.text()).toMatchSnapshot("response text");
+
+      expect(consoleMessages.map((message) => message.text())).toMatchSnapshot(
+        "console messages"
+      );
+
+      expect(pageErrors).toMatchSnapshot("page errors");
+    });
+
+    it("should handle HEAD request to magic async html", async () => {
+      await page.setRequestInterception(true);
+
+      page
+        .on("console", (message) => {
+          consoleMessages.push(message);
+        })
+        .on("pageerror", (error) => {
+          pageErrors.push(error);
+        })
+        .on("request", (interceptedRequest) => {
+          interceptedRequest.continue({ method: "HEAD" });
+        });
+
+      const response = await page.goto(`http://127.0.0.1:${port}/main`, {
+        waitUntil: "networkidle0",
+      });
+
+      expect(response.headers()["content-type"]).toMatchSnapshot(
+        "response headers content-type"
+      );
+
+      expect(response.status()).toMatchSnapshot("response status");
+
+      expect(await response.text()).toMatchSnapshot("response text");
+
+      expect(consoleMessages.map((message) => message.text())).toMatchSnapshot(
+        "console messages"
+      );
+
+      expect(pageErrors).toMatchSnapshot("page errors");
     });
   });
 
@@ -133,6 +325,8 @@ describe("magicHtml option", () => {
       expect(consoleMessages.map((message) => message.text())).toMatchSnapshot(
         "console messages"
       );
+
+      expect(pageErrors).toMatchSnapshot("page errors");
     });
 
     it("should not handle HEAD request to magic async html", async () => {
@@ -162,6 +356,8 @@ describe("magicHtml option", () => {
       expect(consoleMessages.map((message) => message.text())).toMatchSnapshot(
         "console messages"
       );
+
+      expect(pageErrors).toMatchSnapshot("page errors");
     });
   });
 });
