@@ -317,226 +317,229 @@ describe("magicHtml option", () => {
     });
   });
 
-  describe("enabled with experiments.outputModule: true and .js extension", () => {
-    let compiler;
-    let server;
-    let page;
-    let browser;
-    let pageErrors;
-    let consoleMessages;
+  webpack5Test(
+    "enabled with experiments.outputModule: true and .js extension",
+    () => {
+      let compiler;
+      let server;
+      let page;
+      let browser;
+      let pageErrors;
+      let consoleMessages;
 
-    describe("filename bundle.js", () => {
-      beforeEach(async () => {
-        compiler = webpack({
-          ...config,
-          output: {
-            path: "/",
-            filename: "bundle.js",
-          },
-          experiments: {
-            outputModule: true,
-          },
-        });
-        server = new Server({ port, magicHtml: true }, compiler);
-
-        await server.start();
-
-        ({ page, browser } = await runBrowser());
-
-        pageErrors = [];
-        consoleMessages = [];
-      });
-
-      afterEach(async () => {
-        await browser.close();
-        await server.stop();
-      });
-
-      it("should handle GET request to magic async html (/bundle)", async () => {
-        page
-          .on("console", (message) => {
-            consoleMessages.push(message);
-          })
-          .on("pageerror", (error) => {
-            pageErrors.push(error);
+      describe("filename bundle.js", () => {
+        beforeEach(async () => {
+          compiler = webpack({
+            ...config,
+            output: {
+              path: "/",
+              filename: "bundle.js",
+            },
+            experiments: {
+              outputModule: true,
+            },
           });
+          server = new Server({ port, magicHtml: true }, compiler);
 
-        const response = await page.goto(`http://127.0.0.1:${port}/bundle`, {
-          waitUntil: "networkidle0",
+          await server.start();
+
+          ({ page, browser } = await runBrowser());
+
+          pageErrors = [];
+          consoleMessages = [];
         });
 
-        expect(response.headers()["content-type"]).toMatchSnapshot(
-          "response headers content-type"
-        );
-
-        expect(response.status()).toMatchSnapshot("response status");
-
-        expect(await response.text()).toMatchSnapshot("response text");
-
-        expect(
-          consoleMessages.map((message) => message.text())
-        ).toMatchSnapshot("console messages");
-
-        expect(pageErrors).toMatchSnapshot("page errors");
-      });
-
-      it("should handle HEAD request to magic async html (/bundle)", async () => {
-        await page.setRequestInterception(true);
-
-        page
-          .on("console", (message) => {
-            consoleMessages.push(message);
-          })
-          .on("pageerror", (error) => {
-            pageErrors.push(error);
-          })
-          .on("request", (interceptedRequest) => {
-            interceptedRequest.continue({ method: "HEAD" });
-          });
-
-        const response = await page.goto(`http://127.0.0.1:${port}/bundle`, {
-          waitUntil: "networkidle0",
+        afterEach(async () => {
+          await browser.close();
+          await server.stop();
         });
 
-        expect(response.headers()["content-type"]).toMatchSnapshot(
-          "response headers content-type"
-        );
+        it("should handle GET request to magic async html (/bundle)", async () => {
+          page
+            .on("console", (message) => {
+              consoleMessages.push(message);
+            })
+            .on("pageerror", (error) => {
+              pageErrors.push(error);
+            });
 
-        expect(response.status()).toMatchSnapshot("response status");
-
-        expect(await response.text()).toMatchSnapshot("response text");
-
-        expect(
-          consoleMessages.map((message) => message.text())
-        ).toMatchSnapshot("console messages");
-
-        expect(pageErrors).toMatchSnapshot("page errors");
-      });
-    });
-
-    describe("filename bundle.other.js", () => {
-      beforeEach(async () => {
-        compiler = webpack({
-          ...config,
-          output: {
-            path: "/",
-            filename: "bundle.other.js",
-          },
-          experiments: {
-            outputModule: true,
-          },
-        });
-        server = new Server({ port, magicHtml: true }, compiler);
-
-        await server.start();
-
-        ({ page, browser } = await runBrowser());
-
-        pageErrors = [];
-        consoleMessages = [];
-      });
-
-      afterEach(async () => {
-        await browser.close();
-        await server.stop();
-      });
-
-      it("should handle GET request to magic async html (/bundle.other)", async () => {
-        page
-          .on("console", (message) => {
-            consoleMessages.push(message);
-          })
-          .on("pageerror", (error) => {
-            pageErrors.push(error);
-          });
-
-        const response = await page.goto(
-          `http://127.0.0.1:${port}/bundle.other`,
-          {
+          const response = await page.goto(`http://127.0.0.1:${port}/bundle`, {
             waitUntil: "networkidle0",
-          }
-        );
-
-        expect(response.headers()["content-type"]).toMatchSnapshot(
-          "response headers content-type"
-        );
-
-        expect(response.status()).toMatchSnapshot("response status");
-
-        expect(await response.text()).toMatchSnapshot("response text");
-
-        expect(
-          consoleMessages.map((message) => message.text())
-        ).toMatchSnapshot("console messages");
-
-        expect(pageErrors).toMatchSnapshot("page errors");
-      });
-
-      it("should not handle GET request to /bundle", async () => {
-        page
-          .on("console", (message) => {
-            consoleMessages.push(message);
-          })
-          .on("pageerror", (error) => {
-            pageErrors.push(error);
           });
 
-        const response = await page.goto(`http://127.0.0.1:${port}/bundle`, {
-          waitUntil: "networkidle0",
+          expect(response.headers()["content-type"]).toMatchSnapshot(
+            "response headers content-type"
+          );
+
+          expect(response.status()).toMatchSnapshot("response status");
+
+          expect(await response.text()).toMatchSnapshot("response text");
+
+          expect(
+            consoleMessages.map((message) => message.text())
+          ).toMatchSnapshot("console messages");
+
+          expect(pageErrors).toMatchSnapshot("page errors");
         });
 
-        expect(response.headers()["content-type"]).toMatchSnapshot(
-          "response headers content-type"
-        );
+        it("should handle HEAD request to magic async html (/bundle)", async () => {
+          await page.setRequestInterception(true);
 
-        expect(response.status()).toMatchSnapshot("response status");
+          page
+            .on("console", (message) => {
+              consoleMessages.push(message);
+            })
+            .on("pageerror", (error) => {
+              pageErrors.push(error);
+            })
+            .on("request", (interceptedRequest) => {
+              interceptedRequest.continue({ method: "HEAD" });
+            });
 
-        expect(await response.text()).toMatchSnapshot("response text");
-
-        expect(
-          consoleMessages.map((message) => message.text())
-        ).toMatchSnapshot("console messages");
-
-        expect(pageErrors).toMatchSnapshot("page errors");
-      });
-
-      it("should handle HEAD request to magic async html (/bundle.other)", async () => {
-        await page.setRequestInterception(true);
-
-        page
-          .on("console", (message) => {
-            consoleMessages.push(message);
-          })
-          .on("pageerror", (error) => {
-            pageErrors.push(error);
-          })
-          .on("request", (interceptedRequest) => {
-            interceptedRequest.continue({ method: "HEAD" });
+          const response = await page.goto(`http://127.0.0.1:${port}/bundle`, {
+            waitUntil: "networkidle0",
           });
 
-        const response = await page.goto(
-          `http://127.0.0.1:${port}/bundle.other`,
-          {
-            waitUntil: "networkidle0",
-          }
-        );
+          expect(response.headers()["content-type"]).toMatchSnapshot(
+            "response headers content-type"
+          );
 
-        expect(response.headers()["content-type"]).toMatchSnapshot(
-          "response headers content-type"
-        );
+          expect(response.status()).toMatchSnapshot("response status");
 
-        expect(response.status()).toMatchSnapshot("response status");
+          expect(await response.text()).toMatchSnapshot("response text");
 
-        expect(await response.text()).toMatchSnapshot("response text");
+          expect(
+            consoleMessages.map((message) => message.text())
+          ).toMatchSnapshot("console messages");
 
-        expect(
-          consoleMessages.map((message) => message.text())
-        ).toMatchSnapshot("console messages");
-
-        expect(pageErrors).toMatchSnapshot("page errors");
+          expect(pageErrors).toMatchSnapshot("page errors");
+        });
       });
-    });
-  });
+
+      describe("filename bundle.other.js", () => {
+        beforeEach(async () => {
+          compiler = webpack({
+            ...config,
+            output: {
+              path: "/",
+              filename: "bundle.other.js",
+            },
+            experiments: {
+              outputModule: true,
+            },
+          });
+          server = new Server({ port, magicHtml: true }, compiler);
+
+          await server.start();
+
+          ({ page, browser } = await runBrowser());
+
+          pageErrors = [];
+          consoleMessages = [];
+        });
+
+        afterEach(async () => {
+          await browser.close();
+          await server.stop();
+        });
+
+        it("should handle GET request to magic async html (/bundle.other)", async () => {
+          page
+            .on("console", (message) => {
+              consoleMessages.push(message);
+            })
+            .on("pageerror", (error) => {
+              pageErrors.push(error);
+            });
+
+          const response = await page.goto(
+            `http://127.0.0.1:${port}/bundle.other`,
+            {
+              waitUntil: "networkidle0",
+            }
+          );
+
+          expect(response.headers()["content-type"]).toMatchSnapshot(
+            "response headers content-type"
+          );
+
+          expect(response.status()).toMatchSnapshot("response status");
+
+          expect(await response.text()).toMatchSnapshot("response text");
+
+          expect(
+            consoleMessages.map((message) => message.text())
+          ).toMatchSnapshot("console messages");
+
+          expect(pageErrors).toMatchSnapshot("page errors");
+        });
+
+        it("should not handle GET request to /bundle", async () => {
+          page
+            .on("console", (message) => {
+              consoleMessages.push(message);
+            })
+            .on("pageerror", (error) => {
+              pageErrors.push(error);
+            });
+
+          const response = await page.goto(`http://127.0.0.1:${port}/bundle`, {
+            waitUntil: "networkidle0",
+          });
+
+          expect(response.headers()["content-type"]).toMatchSnapshot(
+            "response headers content-type"
+          );
+
+          expect(response.status()).toMatchSnapshot("response status");
+
+          expect(await response.text()).toMatchSnapshot("response text");
+
+          expect(
+            consoleMessages.map((message) => message.text())
+          ).toMatchSnapshot("console messages");
+
+          expect(pageErrors).toMatchSnapshot("page errors");
+        });
+
+        it("should handle HEAD request to magic async html (/bundle.other)", async () => {
+          await page.setRequestInterception(true);
+
+          page
+            .on("console", (message) => {
+              consoleMessages.push(message);
+            })
+            .on("pageerror", (error) => {
+              pageErrors.push(error);
+            })
+            .on("request", (interceptedRequest) => {
+              interceptedRequest.continue({ method: "HEAD" });
+            });
+
+          const response = await page.goto(
+            `http://127.0.0.1:${port}/bundle.other`,
+            {
+              waitUntil: "networkidle0",
+            }
+          );
+
+          expect(response.headers()["content-type"]).toMatchSnapshot(
+            "response headers content-type"
+          );
+
+          expect(response.status()).toMatchSnapshot("response status");
+
+          expect(await response.text()).toMatchSnapshot("response text");
+
+          expect(
+            consoleMessages.map((message) => message.text())
+          ).toMatchSnapshot("console messages");
+
+          expect(pageErrors).toMatchSnapshot("page errors");
+        });
+      });
+    }
+  );
 
   webpack5Test("enabled with experiments.outputModule: false", () => {
     let compiler;
